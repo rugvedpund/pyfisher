@@ -350,7 +350,7 @@ class FisherMatrix(DataFrame):
 def get_planck_cmb_fisher(param_list,bin_edges,specs,root_name,fsky,interpolate=True):
     ells = np.arange(0,bin_edges.max()+1)
     nls = get_planck_nls(ells)
-    cls = load_theory_dict(f'{data_dir}/{os.path.basename(root_name)}_cmb_derivs_cmb_fiducial.txt',ells)
+    cls = load_theory_dict(f'{data_dir}{os.path.basename(root_name)}_cmb_derivs_cmb_fiducial.txt',ells)
     dcls = load_derivs(root_name,param_list,ells)
     return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
 
