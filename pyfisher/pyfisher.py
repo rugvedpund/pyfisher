@@ -109,6 +109,23 @@ def contour_plot(fisher,fiducials,fname,name='',add_marker=False,latex=True):
     fig.set_size_inches(3 + fig.get_size_inches()) 
     fig.savefig(fname)
 
+def contour_plot2(fisher1, fisher2, fiducials,fname,name1='',name2='',add_marker=False,latex=True):
+    from chainconsumer import ChainConsumer
+    mean1 = [fiducials[key] for key in fisher1.params]
+    mean2 = [fiducials[key] for key in fisher2.params]
+    cov1 = np.linalg.inv(fisher1.values)
+    cov2 = np.linalg.inv(fisher2.values)
+    parameters1 = [latex_mapping[x] for x in fisher1.params] if latex else fisher1.params
+    parameters2 = [latex_mapping[x] for x in fisher2.params] if latex else fisher2.params
+
+    c = ChainConsumer()
+    c.add_covariance(mean1, cov1, parameters=parameters1, name=name1,shade=False)
+    c.add_covariance(mean2, cov2, parameters=parameters2, name=name2,shade=False)
+    if add_marker: c.add_marker(mean, parameters=parameters, marker_style="*", marker_size=100, color="r",name='')
+    c.configure(usetex=False, serif=False,sigma2d=True,sigmas=[1])
+    fig = c.plotter.plot()
+    fig.set_size_inches(3 + fig.get_size_inches()) 
+    fig.savefig(fname)
 
 def get_fiducials(root_name='v20201120'):
     param_file = f'{data_dir}{root_name}_cmb_derivs/params.txt'
