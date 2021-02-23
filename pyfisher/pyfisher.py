@@ -354,6 +354,28 @@ def get_planck_cmb_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=
     dcls = load_derivs(root_name,param_list,ells)
     return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
 
+def get_cmbHD_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,interpolate=True):
+    ells = np.arange(0,bin_edges.max()+1)
+    nls = get_cmbHD_nls(ells)
+    cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
+    dcls = load_derivs(root_name,param_list,ells)
+    return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
+
+def get_cmbHD_nls(ells):
+    beams_T =  [33.,23.,14.,10.,7.,5.,5.]
+    uK_arcmins_T = [145.,149.,137.,65.,43.,66.,200.]
+    beams_P =  [14.,10.,7.,5.,5.]
+    uK_arcmins_P = [450.,103.,81.,134.,406.]
+    Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
+    Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
+    N_TT = 1./(1./Ns_TT).sum(axis=0)
+    N_PP = 1./(1./Ns_PP).sum(axis=0)
+    nls = {}
+    nls['TT'] = interp(ells,N_TT)
+    nls['EE'] = interp(ells,N_PP)
+    nls['BB'] = interp(ells,N_PP)
+    return nls
+
 
 def load_derivs(root_name,param_list,ells):
     dcls = {}
