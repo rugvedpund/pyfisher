@@ -136,7 +136,7 @@ def get_lensing_fisher(bin_edges,ells,nls,fsky,root_name='v20201120',interpolate
     param_list = list(fids.keys())
     nl_dict = {'kk':interp(ells,nls,bounds_error=True)}
     cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
-    dcls = load_derivs(f'{data_dir}{root_name}_cmb_derivs',param_list,ells)
+    dcls = load_derivs(root_name,param_list,ells)
     F = band_fisher(param_list,bin_edges,['kk'],cls,nl_dict,dcls,interpolate=interpolate)  * fsky
     return F
 
