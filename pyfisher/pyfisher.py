@@ -121,7 +121,7 @@ def contour_plot2(fisher1, fisher2, fiducials,fname,name1='',name2='',add_marker
     c = ChainConsumer()
     c.add_covariance(mean1, cov1, parameters=parameters1, name=name1,shade=False)
     c.add_covariance(mean2, cov2, parameters=parameters2, name=name2,shade=False)
-    if add_marker: c.add_marker(mean, parameters=parameters, marker_style="*", marker_size=100, color="r",name='')
+    if add_marker: c.add_marker(mean1, parameters=parameters1, marker_style="*", marker_size=100, color="r",name='')
     c.configure(usetex=False, serif=False,sigma2d=True,sigmas=[1])
     fig = c.plotter.plot()
     fig.set_size_inches(3 + fig.get_size_inches()) 
