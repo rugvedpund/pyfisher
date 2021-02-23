@@ -362,10 +362,10 @@ def get_cmbHD_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,i
     return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
 
 def get_cmbHD_nls(ells):
-    beams_T =  [33.,23.,14.,10.,7.,5.,5.]
-    uK_arcmins_T = [145.,149.,137.,65.,43.,66.,200.]
-    beams_P =  [14.,10.,7.,5.,5.]
-    uK_arcmins_P = [450.,103.,81.,134.,406.]
+    beams_T =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
+    uK_arcmins_T = [6.5,3.4,0.7,0.8,2.0,2.7,100.0]
+    beams_P =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
+    uK_arcmins_P = [45.0*np.sqrt(2),10.3*np.sqrt(2),8.1*np.sqrt(2),13.4*np.sqrt(2),40.6*np.sqrt(2)]
     Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
     Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
     N_TT = 1./(1./Ns_TT).sum(axis=0)
