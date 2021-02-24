@@ -127,6 +127,24 @@ def contour_plot2(fisher1, fisher2, fiducials,fname,name1='',name2='',add_marker
     fig.set_size_inches(3 + fig.get_size_inches()) 
     fig.savefig(fname)
 
+def contour_plot_multiple(fisher_list,fiducials,fname,name_list,add_marker=False,latex=True):
+    from chainconsumer import ChainConsumer
+    c = ChainConsumer()
+    means_list=[]
+    covs_list=[]
+    parameters_list=[]
+    for i in range(len(fisher_list)):
+        means_list.append([fiducials[key] for key in fisher_list[i].params])
+        covs_list.append(np.linalg.inv(fisher_list[i].values)) 
+        parameters_list.append([latex_mapping[x] for x in fisher_list[i].params] if latex else fisher_list[i].params)
+        c.add_covariance(means_list[i], covs_list[i], parameters=parameters_list[i], name=name_list[i],shade=False)
+    
+    if add_marker: c.add_marker(mean1, parameters=parameters1, marker_style="*", marker_size=100, color="r",name='')
+    c.configure(usetex=False, serif=False,sigma2d=True,sigmas=[0,1,2])
+    fig = c.plotter.plot()
+    fig.set_size_inches(3 + fig.get_size_inches()) 
+    fig.savefig(fname)
+
 def get_fiducials(root_name='v20201120'):
     param_file = f'{data_dir}{root_name}_cmb_derivs/params.txt'
     _,fids = get_param_info(param_file,exclude=None)
@@ -393,6 +411,20 @@ def get_cmbHD_nls(ells):
     nls['BB'] = interp(ells,N_PP)
     return nls
 
+def get_SimonsObs_nls(ells):
+    beams_T =  [7.4,5.1,2.2,1.4,1.0,0.9]
+    uK_arcmins_T = [52.0,27.0,5.8,6.3,15.0,37.0]
+    beams_P =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
+    uK_arcmins_P = [45.0*np.sqrt(2),10.3*np.sqrt(2),8.1*np.sqrt(2),13.4*np.sqrt(2),40.6*np.sqrt(2)]
+    Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
+    Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
+    N_TT = 1./(1./Ns_TT).sum(axis=0)
+    N_PP = 1./(1./Ns_PP).sum(axis=0)
+    nls = {}
+    nls['TT'] = interp(ells,N_TT)
+    nls['EE'] = interp(ells,N_PP)
+    nls['BB'] = interp(ells,N_PP)
+    return nls
 
 def load_derivs(root_name,param_list,ells):
     dcls = {}
