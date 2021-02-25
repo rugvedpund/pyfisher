@@ -175,7 +175,7 @@ def check_fisher_sanity(fmat,param_list):
 
 def write_fisher(filename,fmat,delim=','):
     np.savetxt(filename,fmat,header=(delim).join(fmat.params),delimiter=delim)
-
+    
 def read_fisher(csv_file,delim=','):
     fmat = np.loadtxt(csv_file,delimiter=delim)
     with open(csv_file) as f:
@@ -378,6 +378,20 @@ def get_cmbHD_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,i
     dcls = load_derivs(root_name,param_list,ells)
     return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
 
+def get_SimonsObs_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,interpolate=True):
+    ells = np.arange(0,bin_edges.max()+1)
+    nls = get_SimonsObs_nls(ells)
+    cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
+    dcls = load_derivs(root_name,param_list,ells)
+    return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
+
+def get_cmbS4_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,interpolate=True):
+    ells = np.arange(0,bin_edges.max()+1)
+    nls = get_cmbS4_nls(ells)
+    cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
+    dcls = load_derivs(root_name,param_list,ells)
+    return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate)  * fsky
+
 def get_cmbHD_nls(ells):
     beams_T =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
     uK_arcmins_T = [6.5,3.4,0.7,0.8,2.0,2.7,100.0]
@@ -393,11 +407,26 @@ def get_cmbHD_nls(ells):
     nls['BB'] = interp(ells,N_PP)
     return nls
 
+def get_cmbS4_nls(ells):
+    beams_T =  [10.,7.4,5.1,2.2,1.4,1.0,0.9]
+    uK_arcmins_T = [45.9,15.5,8.7,1.5,1.5,4.8,11.5]
+    beams_P =  [10.,7.4,5.1,2.2,1.4,1.0,0.9]
+    uK_arcmins_P = [45.9*np.sqrt(2),15.5*np.sqrt(2),8.7*np.sqrt(2),1.5*np.sqrt(2),1.5*np.sqrt(2),4.8*np.sqrt(2),11.5*np.sqrt(2)]
+    Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
+    Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
+    N_TT = 1./(1./Ns_TT).sum(axis=0)
+    N_PP = 1./(1./Ns_PP).sum(axis=0)
+    nls = {}
+    nls['TT'] = interp(ells,N_TT)
+    nls['EE'] = interp(ells,N_PP)
+    nls['BB'] = interp(ells,N_PP)
+    return nls
+
 def get_SimonsObs_nls(ells):
     beams_T =  [7.4,5.1,2.2,1.4,1.0,0.9]
     uK_arcmins_T = [52.0,27.0,5.8,6.3,15.0,37.0]
-    beams_P =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
-    uK_arcmins_P = [45.0*np.sqrt(2),10.3*np.sqrt(2),8.1*np.sqrt(2),13.4*np.sqrt(2),40.6*np.sqrt(2)]
+    beams_P =  [7.4,5.1,2.2,1.4,1.0,0.9]
+    uK_arcmins_P = [52.0*np.sqrt(2),27.0*np.sqrt(2),5.8*np.sqrt(2),6.3*np.sqrt(2),15.0*np.sqrt(2),37.0*np.sqrt(2)]
     Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
     Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
     N_TT = 1./(1./Ns_TT).sum(axis=0)
