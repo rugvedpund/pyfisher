@@ -119,7 +119,7 @@ def contour_plot_multiple(fisher_list,fiducials,fname,name_list,add_marker=False
         means_list.append([fiducials[key] for key in fisher_list[i].params])
         covs_list.append(np.linalg.inv(fisher_list[i].values)) 
         parameters_list.append([latex_mapping[x] for x in fisher_list[i].params] if latex else fisher_list[i].params)
-        c.add_covariance(means_list[i], covs_list[i], parameters=parameters_list[i], name=name_list[i])
+        c.add_covariance(means_list[i], covs_list[i], parameters=parameters_list[i], name=name_list[i], shade=True)
     
     if add_marker: c.add_marker(mean1, parameters=parameters1, marker_style="*", marker_size=100, color="r",name='')
     c.configure(usetex=False, serif=False,sigma2d=True,sigmas=[0,1,2])
@@ -175,7 +175,7 @@ def check_fisher_sanity(fmat,param_list):
 
 def write_fisher(filename,fmat,delim=','):
     np.savetxt(filename,fmat,header=(delim).join(fmat.params),delimiter=delim)
-    
+
 def read_fisher(csv_file,delim=','):
     fmat = np.loadtxt(csv_file,delimiter=delim)
     with open(csv_file) as f:
@@ -396,7 +396,7 @@ def get_cmbHD_nls(ells):
     beams_T =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
     uK_arcmins_T = [6.5,3.4,0.7,0.8,2.0,2.7,100.0]
     beams_P =  [1.25,0.94,0.42,0.25,0.17,0.13,0.11]
-    uK_arcmins_P = [45.0*np.sqrt(2),10.3*np.sqrt(2),8.1*np.sqrt(2),13.4*np.sqrt(2),40.6*np.sqrt(2)]
+    uK_arcmins_P = [6.5*np.sqrt(2),3.4*np.sqrt(2),0.7*np.sqrt(2),0.8*np.sqrt(2),2.0*np.sqrt(2),2.7*np.sqrt(2),100.0*np.sqrt(2)]
     Ns_TT = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_T,beams_T)])
     Ns_PP = np.asarray([(uK_arcmin*np.pi/180./60.)**2./gauss_beam(ells,fwhm)**2. for uK_arcmin,fwhm in zip(uK_arcmins_P,beams_P)])
     N_TT = 1./(1./Ns_TT).sum(axis=0)
