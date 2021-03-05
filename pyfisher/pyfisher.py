@@ -93,6 +93,7 @@ def prepare_output(args, message="",allow_changes=False):
         if not(allow_changes): assert not(info['changes']), "Git must not have changes to run this script."
         f.write(pretty_info(info))
     output_root = f'{output_path}/{rname}'
+    print(output_root)
     return output_root
 
 def contour_plot(fisher,fiducials,fname,name='',add_marker=False,latex=True):
