@@ -793,7 +793,7 @@ def get_cls(params=None,lmax=3000,accurate=False,engine='camb',de='ppf',nonlinea
             pars.set_for_lmax(lmax=int(lmax+500), lens_potential_accuracy=1, max_eta_k=2*lmax)
         if nonlinear:
             pars.NonLinear = model.NonLinear_both
-            pars.NonLinearModel.set_params(‘mead2016’, HMCode_A_baryon = 3.13, HMCode_eta_baryon = 0.603)
+            pars.NonLinearModel.set_params(‘mead2020’, HMCode_A_baryon = 3.13, HMCode_eta_baryon = 0.603)
         else:
             pars.NonLinear = model.NonLinear_none
         return load_theory(pars,lpad=lmax+2)
