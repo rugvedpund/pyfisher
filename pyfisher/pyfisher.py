@@ -786,7 +786,7 @@ def get_cls(params=None,lmax=3000,accurate=False,engine='camb',de='ppf',nonlinea
     if engine=='camb':
         pars = set_camb_pars(params=params,de=de)
         if accurate:
-            pars.set_accuracy(AccuracyBoost=3.0, lSampleBoost=2.0, lAccuracyBoost=3.0, DoLateRadTruncation=False)
+            pars.set_accuracy(AccuracyBoost=2.0, lSampleBoost=2.0, lAccuracyBoost=2.0, DoLateRadTruncation=False)
             pars.set_for_lmax(lmax=int(lmax+500), lens_potential_accuracy=8.0, lens_margin=2050, max_eta_k=20000)
         else:
             pars.set_accuracy(AccuracyBoost=1.0, lSampleBoost=1.0, lAccuracyBoost=1.0)
