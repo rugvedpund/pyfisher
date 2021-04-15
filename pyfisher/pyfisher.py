@@ -686,6 +686,7 @@ def set_defaults(params):
     ds = {
         'omch2': 0.1203058,
         'ombh2': 0.02219218,
+        'H0': None,
         'ns': 0.9625356,
         'As': 2.15086031154146e-9,
         'mnu': 0.06,
@@ -696,6 +697,7 @@ def set_defaults(params):
         'ok':0,
         'r':0,
         'cs2':1.0,
+        'thetastar': None,
         'ctheta': None
     }
     for key in ds.keys():
@@ -718,11 +720,11 @@ def set_camb_pars(params=None,de='ppf'):
     pars = camb.CAMBparams()
     #This function sets up CosmoMC-like settings, with one massive neutrino and helium set using BBN consistency
     H0 = params.get('H0')
-    if H0:
-        pars.set_cosmology(H0=params['H0'], ombh2=params['ombh2'], 
-                       omch2=params['omch2'], mnu=params['mnu'], 
-                       omk=params['ok'], tau=params['tau'],nnu=params['nnu'],
-                       cosmomc_theta=params['ctheta'],thetastar=params['thetastar'])
+    pars.set_cosmology(H0=params.get('H0'), ombh2=params.get('ombh2'), 
+                       omch2=params.get('omch2'), mnu=params.get('mnu'), 
+                       omk=params.get('ok'), tau=params.get('tau'),nnu=params.get('nnu'),
+                       cosmomc_theta=params.get('ctheta'),thetastar=params.get('thetastar'))
+    
     pars.InitPower.set_params(As=params['As'], ns=params['ns'], r=params['r'])
     if params['r']>0: pars.WantTensors = True
     pars.set_dark_energy(w=params['w0'], wa=params['wa'], cs2=params['cs2'],dark_energy_model=de)
