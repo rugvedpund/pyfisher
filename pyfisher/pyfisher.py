@@ -679,11 +679,13 @@ def map_params(params,engine='camb'):
         return _camb_to_class(params)
 
 
-def set_defaults(params):
+def set_defaults(params): 
+    #removing H0 and thetastar because conflicts. Remember to add at least one to params file
+    #'H0': 67.02393,
+    #'thetastar': None,
     ds = {
         'omch2': 0.1203058,
         'ombh2': 0.02219218,
-        'H0': 67.02393,
         'ns': 0.9625356,
         'As': 2.15086031154146e-9,
         'mnu': 0.06,
@@ -694,7 +696,6 @@ def set_defaults(params):
         'ok':0,
         'r':0,
         'cs2':1.0,
-        'thetastar': None,
         'ctheta': None
     }
     for key in ds.keys():
@@ -716,7 +717,9 @@ def set_camb_pars(params=None,de='ppf'):
     params = set_defaults(params)
     pars = camb.CAMBparams()
     #This function sets up CosmoMC-like settings, with one massive neutrino and helium set using BBN consistency
-    pars.set_cosmology(H0=params['H0'], ombh2=params['ombh2'], 
+    H0 = params.get('H0')
+    if H0:
+        pars.set_cosmology(H0=params['H0'], ombh2=params['ombh2'], 
                        omch2=params['omch2'], mnu=params['mnu'], 
                        omk=params['ok'], tau=params['tau'],nnu=params['nnu'],
                        cosmomc_theta=params['ctheta'],thetastar=params['thetastar'])
