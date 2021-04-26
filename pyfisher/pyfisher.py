@@ -365,7 +365,12 @@ class FisherMatrix(DataFrame):
         chi212 = finv[i,j]
         return np.array([[chi211,chi212],[chi212,chi222]])
 
-
+def load_saved_cls(ells, root_name='highell'):
+    cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
+    for key in cls:
+        cls[key] = cls[key](ells)
+    return cls
+    
 def get_planck_cmb_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.65,interpolate=True):
     ells = np.arange(0,bin_edges.max()+1)
     nls = get_planck_nls(ells)
