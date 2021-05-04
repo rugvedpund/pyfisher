@@ -412,7 +412,7 @@ def get_cmbHD_nls(ells):
     nls['TT'] = interp(ells,N_TT)
     nls['EE'] = interp(ells,N_PP)
     nls['BB'] = interp(ells,N_PP)
-    return nls
+    return nls    
 
 def set_nls(ells, beams_T, uK_arcmins_T):
     beams_T = np.asarray(beams_T).copy()
@@ -427,6 +427,7 @@ def set_nls(ells, beams_T, uK_arcmins_T):
     nls['TT'] = interp(ells,N_TT)
     nls['EE'] = interp(ells,N_PP)
     nls['BB'] = interp(ells,N_PP)
+    nls['TE'] = interp(ells,np.zeros(len(N_TT)))
     return nls
 
 def get_cmbS4_nls(ells):
