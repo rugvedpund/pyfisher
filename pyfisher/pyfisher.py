@@ -24,7 +24,7 @@ latex_mapping = {
     'ok':'$\\Omega_k$',
     'r':'$r$',
     'cs2':'$c_s^2$',
-    'thetastar': '$\\theta^*$',
+    'thetastar': '$\\theta_*$',
     'ctheta': '$\\theta_{\\rm COSMOMC}$',
     's8': '$\\sigma_8$',
     'om': '$\\Omega_m$',
@@ -412,7 +412,8 @@ def get_cmbHD_nls(ells):
     nls['TT'] = interp(ells,N_TT)
     nls['EE'] = interp(ells,N_PP)
     nls['BB'] = interp(ells,N_PP)
-    return nls    
+    return nls
+    
 
 def set_nls(ells, beams_T, uK_arcmins_T):
     beams_T = np.asarray(beams_T).copy()
