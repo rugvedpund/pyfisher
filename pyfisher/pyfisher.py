@@ -597,8 +597,8 @@ def band_fisher_nongaussian(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_
     ncomps = len(specs)
     lmin=bin_edges[0]
     lmax=bin_edges[-1]
-    
     covmat_specs_dict = {'TT':0,'EE':1,'TE':2,'BB':3,'kk':4}
+    
     nparams = len(param_list)
     Fisher = np.zeros((nparams,nparams))
     
@@ -963,7 +963,7 @@ def load_bao_experiment_rs_dV_diagonal(exp_name,data_path,boss_include=['6df','m
         raise ValueError
     return np.asarray(zs),np.asarray(sig_pers)
 
-def get_cls(params=None,lmax=3000,accurate=False,engine='camb',de='ppf',nonlinear=True):
+def get_cls(params=None,lmax=3000,accurate=False,engine='camb',de='ppf',nonlinear=True,save_raw_camb_output=None):
     from camb import model
     params = map_params(params,engine=engine)
     if engine=='camb':
@@ -979,7 +979,7 @@ def get_cls(params=None,lmax=3000,accurate=False,engine='camb',de='ppf',nonlinea
             pars.NonLinearModel.set_params('mead2016', HMCode_A_baryon = 3.13, HMCode_eta_baryon = 0.603)
         else:
             pars.NonLinear = model.NonLinear_none
-        return load_theory(pars,lpad=lmax+2)
+        return load_theory(pars,lpad=lmax+2,save_raw_camb_output=save_raw_camb_output)
         
     elif engine=='class':
         from classy import Class
@@ -1095,7 +1095,7 @@ def reparameterize(Fmat,oparams,fiducials,deriv_root='v20201120_s8_derivs',verbo
     return repar
 
 
-def load_theory(pars,lpad=9000):
+def load_theory(pars,lpad=9000,save_raw_camb_output=None):
     '''
     All ell and 2pi factors are stripped off.
     '''
@@ -1107,7 +1107,11 @@ def load_theory(pars,lpad=9000):
 
     results = camb.get_results(pars)
     cmbmat = results.get_cmb_power_spectra(pars,lmax=lpad,spectra=['total','unlensed_total','lens_potential'],raw_cl=True,CMB_unit='muK')
-
+    if save_raw_camb_output: 
+        for spectype in ['total','unlensed_total','lens_potential']:
+            savemat = results.get_cmb_power_spectra(pars,lmax=lpad,spectra=['total','unlensed_total','lens_potential'],raw_cl=True,CMB_unit='muK')
+            np.savetxt(save_raw_camb_output+'_'+spectype, savemat[spectype])
+            
     theory = TheorySpectra()
     for i,pol in enumerate(['TT','EE','BB','TE']):
         cls =cmbmat[lSuffix][:,i]
