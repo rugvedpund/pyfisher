@@ -402,12 +402,12 @@ def get_cmb_fisher(param_list,bin_edges,specs,root_name='v20201120',fsky=0.5,int
     dcls = load_derivs(root_name,param_list,ells)
     return band_fisher(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate, covmat=covmat)  * fsky
 
-def get_cmb_fisher_nongaussian(param_list,bin_edges,specs,covmat,root_name='v20201120',fsky=0.5,interpolate=True,nls=None):
+def get_cmb_fisher_offdiagonals(param_list,bin_edges,specs,covmat,root_name='v20201120',fsky=0.5,interpolate=True,nls=None, debug_diags_only=False):
     ells = np.arange(0,bin_edges.max()+1)
     if type(nls)==type(None): nls = get_cmbS4_nls(ells)
     cls = load_theory_dict(f'{data_dir}{root_name}_cmb_derivs/{root_name}_cmb_derivs_cmb_fiducial.txt',ells)
     dcls = load_derivs(root_name,param_list,ells)
-    return band_fisher_nongaussian(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate, covmat=covmat)  * fsky
+    return band_fisher_offdiagonals(param_list,bin_edges,specs,cls,nls,dcls,interpolate=interpolate, covmat=covmat, debug_diags_only=debug_diags_only)  * fsky
 
 
 def get_cmb_fisher_gaussian(param_list,bin_edges,specs,covmat,root_name='v20201120',fsky=0.5,interpolate=True,nls=None):
@@ -568,7 +568,7 @@ def band_fisher_gaussian(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_dic
     cov = np.zeros((nbins,ncomps,ncomps))
     for k,spec1 in enumerate(specs):
         for l,spec2 in enumerate(specs):
-            cov[:,k,l] = np.diag(covmat[covmat_specs_dict[spec1],covmat_specs_dict[spec2]][lmin:lmax,lmin:lmax])
+            cov[:,k,l] = np.diag(covmat[:,:,covmat_specs_dict[spec1],covmat_specs_dict[spec2]])
     cinv = np.linalg.inv(cov)
     #         print(repr(cov[:10,:3,:3]))
     #         print(repr(cinv[:10,:3,:3]))
@@ -590,55 +590,75 @@ def band_fisher_gaussian(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_dic
             if i!=j: Fisher[j,i] = Fisher[i,j]
     #if verbose==True: print(dcls)
     return FisherMatrix(Fisher,param_list)
-def band_fisher_nongaussian(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_dict,covmat,interpolate=True,lensing_cov_mat=None,verbose=True):
+def band_fisher_offdiagonals(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_dict,covmat,interpolate=True,verbose=True, debug_diags_only=False):
     
     cents,bin = get_binner(bin_edges,interpolate)
     nbins = len(bin_edges) - 1
     ncomps = len(specs)
-    lmin=bin_edges[0]
-    lmax=bin_edges[-1]
+    
     covmat_specs_dict = {'TT':0,'EE':1,'TE':2,'BB':3,'kk':4}
     
     nparams = len(param_list)
     Fisher = np.zeros((nparams,nparams))
     
-    cov = np.zeros((nbins,nbins,ncomps,ncomps))
-    for k,spec1 in enumerate(specs):
-        for l,spec2 in enumerate(specs):
-            cov[:,:,k,l] = covmat[covmat_specs_dict[spec1],covmat_specs_dict[spec2]][lmin:lmax,lmin:lmax] #FIX nbins! need a 2D binner here
     
-    cinv=np.zeros((nbins,nbins,ncomps,ncomps))
-    cinv[1:-1,1:-1,:,:]=np.linalg.inv(cov[1:-1,1:-1,:,:])
-    
-    
-    
-    
-#     for l1 in range(lmax-lmin):
-#         for l2 in range(lmax-lmin):
-#             try: cinv[l1,l2,:,:]=np.linalg.inv(cov[l1,l2,:,:])
-#             except: 
-#                 cinv[l1,l2,:,:]=np.zeros((ncomps,ncomps))
-#                 #print(l1,l2)
+    ## temporary debug code
+    if debug_diags_only:
+        cov = np.zeros((nbins,ncomps,ncomps))
 
-    for i in range(nparams):
-        for j in range(i,nparams):
+        for k,spec1 in enumerate(specs):
+            for l,spec2 in enumerate(specs):
+                cov[:,k,l] = np.diag(covmat[:,:,covmat_specs_dict[spec1],covmat_specs_dict[spec2]])
+        cinv = np.linalg.inv(cov)
+        #         print(repr(cov[:10,:3,:3]))
+        #         print(repr(cinv[:10,:3,:3]))
 
-            param1 = param_list[i]
-            param2 = param_list[j]
-            dcls1 = np.zeros((nbins,ncomps))
-            dcls2 = np.zeros((nbins,ncomps))
-            
-            for k,spec1 in enumerate(specs):
-                dcls1[:,k] = bin(derivs_dict[param1][spec1])
-                dcls2[:,k] = bin(derivs_dict[param2][spec1])
-                    
-            Fisher[i,j] = np.einsum('kl,kl->',np.einsum('ij,ikjl->kl',dcls1,cinv),dcls2)
+        nparams = len(param_list)
+        Fisher = np.zeros((nparams,nparams))
+        for i in range(nparams):
+            for j in range(i,nparams):
 
-            #Fisher[i,j] = np.einsum('i,i->',np.einsum('i,ij->j',dcls1,cinv),dcls2)
-            if i!=j: Fisher[j,i] = Fisher[i,j]
-        if verbose: print('Progress: {progress:3.2f} %'.format(progress=(i+1)/nparams*100))
-    if verbose: print('Fisher matrix ready!')
-    return FisherMatrix(Fisher,param_list)
+                param1 = param_list[i]
+                param2 = param_list[j]
+                dcls1 = np.zeros((nbins,ncomps))
+                dcls2 = np.zeros((nbins,ncomps))
+                for k,spec in enumerate(specs):
+                    dcls1[:,k] = bin(derivs_dict[param1][spec])
+                    dcls2[:,k] = bin(derivs_dict[param2][spec])
+
+                Fisher[i,j] = np.einsum('ik,ik->',np.einsum('ij,ijk->ik',dcls1,cinv),dcls2)
+                if i!=j: Fisher[j,i] = Fisher[i,j]
+        #if verbose==True: print(dcls)
+        return FisherMatrix(Fisher,param_list)
+    
+    
+
+    else:
+        cinv = np.zeros((nbins,nbins,ncomps,ncomps))
+        
+        for k,spec1 in enumerate(specs):
+            for l,spec2 in enumerate(specs):
+                cinv[:,:,k,l] = covmat[:,:,covmat_specs_dict[spec1],covmat_specs_dict[spec2]]
+
+        for i in range(nparams):
+            for j in range(i,nparams):
+
+                param1 = param_list[i]
+                param2 = param_list[j]
+                dcls1 = np.zeros((nbins,ncomps))
+                dcls2 = np.zeros((nbins,ncomps))
+
+                for k,spec1 in enumerate(specs):
+                    dcls1[:,k] = bin(derivs_dict[param1][spec1])
+                    dcls2[:,k] = bin(derivs_dict[param2][spec1])
+
+                Fisher[i,j] = np.einsum('kl,kl->',np.einsum('ij,ikjl->kl',dcls1,cinv),dcls2)
+
+                #Fisher[i,j] = np.einsum('i,i->',np.einsum('i,ij->j',dcls1,cinv),dcls2)
+                if i!=j: Fisher[j,i] = Fisher[i,j]
+            if verbose: print('Progress: {progress:3.2f} %'.format(progress=(i+1)/nparams*100))
+        if verbose: print('Fisher matrix ready!')
+        return FisherMatrix(Fisher,param_list)
 
 def band_fisher(param_list,bin_edges,specs,cls_dict,nls_dict,derivs_dict,interpolate=True,covmat=None,lensing_cov_mat=None,verbose=False):
 
